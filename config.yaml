@@ -1,0 +1,86 @@
+# ======================================================
+#  VOCATIONAL TRANSLATOR - MASTER CONFIGURATION
+#  Version: 2.0 - Fully Dynamic Prompt System
+# ======================================================
+
+project:
+  name: "German_Vocational_System"
+  version: "v2.0_dynamic"
+
+paths:
+  input_file: "data/input_german.csv"
+  dictionary: "data/improved_vocational_dict.json"
+  output_file: "data/output_results.csv"
+  logs: "logs/system.log"
+  validation_log: "logs/validation.log"
+  
+  # Prompt Management - Centralized
+  prompts_directory: "prompts/"  # All prompts stored here
+
+# --- MODEL SELECTION ---
+# CHANGE 'active_profile' to switch models instantly
+model:
+  active_profile: "deepseek"  # Options: "qwen", "deepseek", "mistral"
+
+  profiles:
+    # OPTION A: Qwen 2.5 14B (The Expert)
+    qwen:
+      path: "Qwen/Qwen2.5-14B-Instruct"      
+      format: "chatml"
+      precision: "4bit"
+      prompt_name: "prompt_qwen"  # Just the filename (no extension)
+
+    # OPTION B: DeepSeek R1 (The Reasoner)
+    deepseek:
+      path: "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+      format: "llama3"
+      precision: "4bit"
+      prompt_name: "prompt_deepseek"
+
+    # OPTION C: Mistral Nemo 12B (The Persona)
+    mistral:
+      path: "mistralai/Mistral-Nemo-Instruct-2407"
+      format: "mistral"
+      precision: "4bit"
+      prompt_name: "prompt_mistral"
+
+# --- PROMPT SYSTEM (Advanced) ---
+prompts:
+  # Auto-detect and load prompts based on naming convention
+  # Example: qwen_strict_v2.txt, qwen_creative.txt, qwen_technical.txt
+  
+  file_extension: ".txt"
+  encoding: "utf-8"
+  
+  # Optional: Override prompt for testing without changing profile
+  # Set to null to use profile's default prompt_name
+  override_prompt: null  # Example: "qwen_experimental_v3"
+
+# --- PIPELINE RULES ---
+pipeline:
+  save_interval: 1              # Save after every row (Crash Safety)
+  max_retries: 2                # Retry if dictionary terms ignored
+  fuzzy_match: true             # Match inflected forms
+  
+  # Generation Parameters
+  generation:
+    max_new_tokens: 512
+    temperature: 0.1
+    do_sample: false            # Deterministic output
+    repetition_penalty: 1.1
+    
+  # Validation Settings
+  validation:
+    enabled: true
+    check_german_leakage: true
+    check_glossary_usage: true
+    max_german_words_allowed: 2
+
+# --- GLOSSARY ENHANCEMENT ---
+glossary:
+  matching_strategies:
+    - "lemma_match"             # Root form matching
+    - "compound_detection"      # Find "Schraubenschlüssel" in compounds
+    - "case_insensitive"        # Flexible matching
+  
+  priority: "dictionary_first"  # Always prefer dict over model knowledge
